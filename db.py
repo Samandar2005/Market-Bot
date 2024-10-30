@@ -15,8 +15,13 @@ class Database:
         self.conn.commit()
 
     def add_product(self, name, price):
-        self.cursor.execute("INSERT INTO products (name, price) VALUES (?, ?)", (name, price))
-        self.conn.commit()
+        try:
+            self.cursor.execute("INSERT INTO products (name, price) VALUES (?, ?)", (name, price))
+            self.conn.commit()
+            return True  # Muvaffaqiyatli qo'shilsa True qaytaring
+        except sqlite3.Error as e:
+            print(f"Xato: {e}")  # Xatolik haqida ma'lumot
+            return False  # Xato bo'lsa False qaytaring
 
     def get_products(self):
         self.cursor.execute("SELECT * FROM products")
