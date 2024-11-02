@@ -68,9 +68,29 @@ async def admin(message: types.Message):
     await admin_panel(message, db)
 
 
-@router.message(Command(commands=['add_product']))
-async def add_product_handler(message: types.Message):
-    await add_product(message, db)
+
+
+@router.callback_query(lambda call: call.data.startswith("add_to_cart"))
+async def handle_add_to_cart(call: types.CallbackQuery):
+    # Extract product_id from callback data
+    product_id = int(call.data.split(":")[1])
+
+    # Call the add_to_cart function with the user ID and product ID
+    await add_to_cart_callback(call, product_id, db)
+
+
+async def add_to_cart_callback(call: types.CallbackQuery, product_id: int, db):
+    """Adds a specified product to the user's cart based on button click."""
+    try:
+        # Specify quantity as 1 by default
+        quantity = 1
+
+        # Add to cart
+        db.add_to_cart(call.from_user.id, product_id, quantity)
+        await call.answer("Mahsulot savatga muvaffaqiyatli qo'shildi.")
+    except Exception as e:
+        await call.answer(f"Mahsulotni qo'shishda xatolik yuz berdi: {str(e)}", show_alert=True)
+
 
 
 async def main():
