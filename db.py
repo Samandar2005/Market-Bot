@@ -1,5 +1,7 @@
 import sqlite3
+import logging
 
+logging.basicConfig(level=logging.INFO)
 
 class Database:
     def __init__(self):
@@ -18,10 +20,10 @@ class Database:
         try:
             self.cursor.execute("INSERT INTO products (name, price) VALUES (?, ?)", (name, price))
             self.conn.commit()
-            return True  # Muvaffaqiyatli qo'shilsa True qaytaring
+            return True
         except sqlite3.Error as e:
-            print(f"Xato: {e}")  # Xatolik haqida ma'lumot
-            return False  # Xato bo'lsa False qaytaring
+            logging.error(f"Database error: {e}")
+            return False
 
     def get_products(self):
         self.cursor.execute("SELECT * FROM products")
@@ -32,8 +34,13 @@ class Database:
                             (user_id, product_id, quantity))
         self.conn.commit()
 
-    def get_cart(self, user_id):
+    def view_cart(self, user_id):
         self.cursor.execute(
-            "SELECT products.name, products.price, cart.quantity FROM cart INNER JOIN products ON cart.product_id = products.id WHERE cart.user_id = ?",
-            (user_id,))
+            "SELECT products.name, products.price, cart.quantity FROM cart "
+            "INNER JOIN products ON cart.product_id = products.id WHERE cart.user_id = ?",
+            (user_id,)
+        )
         return self.cursor.fetchall()
+
+    def close(self):
+        self.conn.close()
